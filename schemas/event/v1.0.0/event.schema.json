@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://context-engine.dev/schemas/event/v1.0.0/event.schema.json",
+  "title": "Context Engine Universal Event",
+  "description": "The universal event contract that all connectors and SDKs must produce.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "tenantId",
+    "applicationId",
+    "applicationInstanceId",
+    "environment",
+    "eventTimestamp",
+    "actor",
+    "action",
+    "object",
+    "source"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Semver of this event schema."
+    },
+    "eventId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for this event, used for idempotent ingestion."
+    },
+    "tenantId": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "description": "Platform customer identifier, used for data isolation."
+    },
+    "applicationId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Source application class, e.g. 'jira', 'successfactors', 'concur'."
+    },
+    "applicationInstanceId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Specific deployed instance identifier (a tenant may run multiple instances of the same application)."
+    },
+    "environment": {
+      "type": "string",
+      "enum": ["production", "sandbox", "staging", "test"]
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the action happened in the source system, ISO 8601."
+    },
+    "ingestionTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Set by the platform on receipt. Clients should not set this field."
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nativeUserId", "userIdType"],
+      "properties": {
+        "nativeUserId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "User ID as the source application knows it."
+        },
+        "userIdType": {
+          "type": "string",
+          "enum": ["email", "sso_subject", "app_native_id", "employee_id"]
+        },
+        "canonicalUserId": {
+          "type": ["string", "null"],
+          "description": "Resolved cross-app identity, null until identity resolution runs."
+        },
+        "roles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Roles held by the actor at the time of the event, not current roles."
+        }
+      }
+    },
+    "onBehalfOf": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nativeUserId", "userIdType"],
+      "properties": {
+        "nativeUserId": { "type": "string", "minLength": 1 },
+        "userIdType": {
+          "type": "string",
+          "enum": ["email", "sso_subject", "app_native_id", "employee_id"]
+        }
+      },
+      "description": "Set when actor acts on another user's behalf."
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "category"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Specific action, e.g. 'approve_leave_request', 'update_issue_status'."
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "create",
+            "read",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "navigate",
+            "search"
+          ]
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Free-form, connector-specific fields."
+        }
+      }
+    },
+    "object": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objectType", "objectId"],
+      "properties": {
+        "objectType": {
+          "type": "string",
+          "minLength": 1,
+          "description": "e.g. 'leave_request', 'issue', 'sprint'."
+        },
+        "objectId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the specific object instance."
+        },
+        "objectDetails": {
+          "type": "object",
+          "description": "Free-form details about the object."
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["connector", "connectorVersion"],
+      "properties": {
+        "connector": {
+          "type": "string",
+          "minLength": 1,
+          "description": "e.g. 'jira-connector', 'native-sdk'."
+        },
+        "connectorVersion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Semver of the connector."
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sessionId": {
+          "type": "string",
+          "description": "Groups events in the same user session."
+        },
+        "correlationId": {
+          "type": "string",
+          "description": "Trace ID linking events across systems."
+        },
+        "device": {
+          "type": "string",
+          "enum": ["desktop", "mobile", "tablet"]
+        },
+        "geo": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "country": { "type": "string", "description": "Coarse location only." },
+            "region": { "type": "string", "description": "State/province level." }
+          }
+        }
+      }
+    }
+  }
+}

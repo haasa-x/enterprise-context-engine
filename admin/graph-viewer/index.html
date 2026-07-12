@@ -1,0 +1,122 @@
+<meta charset="utf-8" />
+<title>Context Engine — Admin Graph Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="styles.css" />
+<!-- Graph library via CDN (no build step / no npm required) -->
+<script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>Context Engine</h1>
+    <span>Admin Graph Viewer</span>
+  </div>
+
+  <div class="field">
+    <label for="apiBase">API base URL</label>
+    <input id="apiBase" type="text" value="http://localhost:8000" spellcheck="false" />
+  </div>
+
+  <div class="field">
+    <label for="tenantId">Tenant / shop</label>
+    <select id="tenantId">
+      <option value="globex-industries">SAP shop (globex-industries)</option>
+      <option value="initech-global">Salesforce shop (initech-global)</option>
+      <option value="umbrella-holdings">Oracle shop (umbrella-holdings)</option>
+      <option value="acme-corp">Original demo (acme-corp)</option>
+      <option value="__other__">Other — enter tenant ID…</option>
+    </select>
+    <input id="customTenant" type="text" placeholder="Enter tenant ID"
+           spellcheck="false" autocomplete="off" hidden />
+  </div>
+
+  <div class="field">
+    <label for="userSelect">User</label>
+    <select id="userSelect">
+      <option value="">— select a tenant / load users —</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="eventWindow">History window</label>
+    <select id="eventWindow">
+      <option value="30">Last 30 days</option>
+      <option value="90" selected>Last 90 days</option>
+      <option value="180">Last 180 days</option>
+    </select>
+  </div>
+
+  <button id="loadUsersBtn" class="secondary" type="button">Load users</button>
+</header>
+
+<div id="globalStatus">
+  <div id="banner" class="banner info hidden"></div>
+</div>
+
+<main>
+  <!-- NLQ profile -->
+  <section class="card" id="profileCard">
+    <header>
+      <h2>Behavioural profile</h2>
+      <span class="hint" id="profileHint"></span>
+    </header>
+    <div class="body">
+      <div id="profileText"><span class="placeholder">Select a user to view their generated profile.</span></div>
+      <div id="profileMeta" class="profile-meta" hidden></div>
+    </div>
+  </section>
+
+  <div class="two-col">
+    <!-- Graph -->
+    <section class="card" id="graphCard">
+      <header>
+        <h2>Activity graph</h2>
+        <span class="hint">Edge thickness = how often an action was performed</span>
+        <button id="fitGraphBtn" class="ghost" type="button" title="Fit graph to view">Fit</button>
+      </header>
+      <div class="graph-wrap">
+        <div id="graph"></div>
+        <div id="graphStatus" class="mini-status graph-stat"></div>
+      </div>
+      <div class="graph-legend" id="graphLegend"></div>
+    </section>
+
+    <!-- Pattern list -->
+    <section class="card" id="patternCard">
+      <header>
+        <h2>Detected patterns</h2>
+        <span class="hint" id="patternHint"></span>
+      </header>
+      <div class="body">
+        <div id="patternList">
+          <div class="placeholder">Patterns appear once a user with enough activity is selected.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Timeline -->
+  <section class="card" id="timelineCard">
+    <header>
+      <h2>Activity timeline</h2>
+      <span class="hint">Events bucketed by day — clusters show recurring routines</span>
+    </header>
+    <div class="body">
+      <div id="timeline"><div class="placeholder">Select a user to plot their activity over time.</div></div>
+      <div class="timeline-tip" id="timelineTip"></div>
+    </div>
+  </section>
+
+  <!-- Event feed -->
+  <section class="card" id="feedCard">
+    <header>
+      <h2>Event feed</h2>
+      <span class="hint" id="feedHint"></span>
+      <button id="refreshFeedBtn" class="secondary" type="button" style="margin-left:12px">Refresh</button>
+    </header>
+    <div class="event-list" id="eventFeed">
+      <div class="placeholder">Recent events for the selected user appear here, newest first.</div>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>

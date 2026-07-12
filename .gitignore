@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+dist/
+build/
+.env
+.DS_Store
+node_modules/
+sdk/node/dist/
+*.log
+.claude/
+
+# Internal planning artifact — not for publication
+EXECUTION_PLAN.md
+
+# Generated shop seed data — 37 MB, regenerate with:
+#   python -m samples.shops.generate generate --shop all
+samples/shops/data/

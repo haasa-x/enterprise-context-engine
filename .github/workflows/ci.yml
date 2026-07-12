@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check src tests connectors samples
+
+      - name: Type check (mypy --strict)
+        run: mypy --strict src
+
+      - name: Architecture rules (dependency + tenant-query enforcement)
+        run: pytest tests/test_architecture.py -q
+
+      - name: Doc link check (no broken/orphaned internal links)
+        run: pytest tests/test_doc_links.py -q
+
+      - name: Test with coverage
+        # testcontainers pulls and runs a disposable Neo4j image against the
+        # Docker daemon that's preinstalled and running on GitHub-hosted runners.
+        run: |
+          pytest --cov=context_engine --cov-report=term-missing --cov-fail-under=80
+
+  jira-connector:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Test
+        run: pytest tests/test_jira_connector.py -v
+
+  sdk-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install SDK
+        run: pip install -e "sdk/python[dev]"
+
+      - name: Test
+        run: pytest sdk/python/tests -v
+
+  sdk-node:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk/node
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: sdk/node/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Type check
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+  docker-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bring up the full stack
+        run: docker compose up -d --build
+
+      - name: Wait for the API to become ready
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/readyz; then exit 0; fi
+            sleep 2
+          done
+          echo "API did not become ready in time" >&2
+          docker compose logs
+          exit 1
+
+      - name: Smoke test event ingestion
+        run: |
+          curl -sf -X POST http://localhost:8000/v1/events \
+            -H "Content-Type: application/json" \
+            -d '{
+              "schemaVersion": "1.0.0",
+              "eventId": "11111111-1111-1111-1111-111111111111",
+              "tenantId": "ci-smoke-test",
+              "applicationId": "jira",
+              "applicationInstanceId": "ci-jira-01",
+              "environment": "test",
+              "eventTimestamp": "2024-01-01T00:00:00Z",
+              "actor": {"nativeUserId": "ci-user", "userIdType": "employee_id"},
+              "action": {"type": "view_sprint_board", "category": "read"},
+              "object": {"objectType": "sprint", "objectId": "SPRINT-1"},
+              "source": {"connector": "native-sdk", "connectorVersion": "1.0.0"}
+            }'
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v
