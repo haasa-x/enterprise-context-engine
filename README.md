@@ -278,6 +278,36 @@ database, no GPU requirements — see
 [docs/adr/001-neo4j-over-alternatives.md](docs/adr/001-neo4j-over-alternatives.md)
 for why.
 
+## Roadmap — using it with LLMs & agents
+
+The engine is designed to be the **context layer for LLM agents**: instead of an
+agent guessing what a user wants, it calls the engine to ground its next action
+in what that user actually does. Here's what's in place and what's coming.
+
+**Today**
+
+- REST (`POST /v1/resolve-intent`, `GET /v1/users/{id}/profile`) and equivalent
+  **MCP tools** (`resolve_user_intent`, `get_user_profile`) any agent can call —
+  no custom integration.
+- Fully deterministic prediction and profiling — no LLM, embeddings, or vector
+  DB in the path.
+
+**Coming up**
+
+- **Agent-uses-engine example** — a runnable walkthrough of an LLM agent calling
+  the MCP tools mid-task to fetch a user's predicted intent and behavioural
+  profile, then acting on it, with a copy-paste recipe.
+- **LLM profiler backend** — an optional `CE_PROFILE_GENERATOR_BACKEND=llm` mode
+  ([`profiler/llm_generator.py`](src/context_engine/profiler/llm_generator.py))
+  that turns a user's graph patterns into a richer natural-language profile via a
+  model call. The deterministic template stays the zero-dependency default.
+- **Intent explanations** — a natural-language "why" behind each prediction, so
+  an agent (and its user) can see the signals a suggestion rests on.
+- **Feedback loop** — let agents report which predictions were acted on, to
+  sharpen ranking over time.
+
+Contributions and ideas welcome — see below.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
