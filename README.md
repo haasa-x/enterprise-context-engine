@@ -1,8 +1,12 @@
-# Context Engine
+# Enterprise Context Engine
 
 An open-source, vendor-neutral service that answers two questions: given this
 user and this trigger, what are they most likely trying to do right now
 (`resolve-intent`), and who is this user and how do they work (`get-profile`)?
+
+It ships with realistic, full-stack seed data for three archetypal enterprise
+buyers — **SAP**, **Salesforce**, and **Oracle** shops — so you can watch the
+graph, profiler, and predictions light up on day one.
 
 Context Engine collects structured user-activity events from enterprise
 applications — Jira, SAP SuccessFactors, Concur, or anything else — via a
@@ -20,8 +24,8 @@ summary using a deterministic, LLM-free template backend by default.
 ## Quick start
 
 ```bash
-git clone https://github.com/<org>/context-engine.git
-cd context-engine
+git clone https://github.com/haasa-x/enterprise-context-engine.git
+cd enterprise-context-engine
 docker compose up
 ```
 
@@ -60,17 +64,41 @@ it.
 
 ### See thick patterns immediately
 
-Rather than wait months for real data to accumulate, seed six months of
-realistic activity for five users across three applications:
+Rather than wait months for real activity to accumulate, load one of the
+bundled datasets and explore it right away.
+
+**Enterprise shops.** Three full-stack tenants model how large enterprises
+actually deploy their suites — every product broken into its real modules, each
+driven by role-appropriate personas, with cross-application workflows that
+surface as sequences in the graph:
+
+| Shop | Tenant ID | Stack |
+|---|---|---|
+| **SAP** | `globex-industries` | SuccessFactors · S/4HANA · Ariba · Concur |
+| **Salesforce** | `initech-global` | Sales · Service · Marketing · CPQ · Experience Cloud |
+| **Oracle** | `umbrella-holdings` | Fusion HCM · ERP · SCM · CX · NetSuite |
+
+```bash
+python -m samples.shops.generate generate --shop all   # writes samples/shops/data/*.json
+python -m samples.shops.generate load --shop sap        # POSTs to the engine under its tenant id
+```
+
+The generated JSON (~37 MB across the three shops) is git-ignored and fully
+reproducible from the generators. See
+[samples/shops/README.md](samples/shops/README.md) and the design writeup in
+[SHOP_DATA_PLAN.md](SHOP_DATA_PLAN.md).
+
+**Small demo.** A lighter dataset — five users across three apps under tenant
+`acme-corp`:
 
 ```bash
 python -m samples.data.seed_events generate                 # writes seed_events.json
 python -m samples.data.seed_events load --tenant acme-corp   # POSTs it in batches
 ```
 
-Then open the admin graph-viewer at <http://localhost:3000> to explore each
-user's graph (thicker edges = more frequent actions), timeline, detected
-patterns, and generated profile.
+Then open the admin graph-viewer at <http://localhost:3000>, pick a shop from
+the **Tenant / shop** dropdown, and explore each user's graph (thicker edges =
+more frequent actions), timeline, detected patterns, and generated profile.
 
 ## Architecture
 
@@ -109,7 +137,7 @@ graph data model, and the multi-tenancy guarantees.
 | `POST /v1/resolve-intent` | Predict a user's current intent |
 | `GET /v1/users/{userId}/profile` | Pre-generated behavioural profile + dominant patterns |
 | `GET /v1/admin/users` | List a tenant's users (admin UI) |
-| `GET /v1/admin/users/{userId}/events` | A user's recent events (admin UI) |
+| `GET /v1/admin/users/{userId}/events` | A user's recent events (admin UI); bounded by `days` and `limit` |
 | `GET /healthz` | Liveness probe |
 | `GET /readyz` | Readiness probe (checks Neo4j connectivity) |
 | `GET /metrics` | Prometheus metrics |
@@ -198,14 +226,19 @@ example under `samples/`:
   log lines into events (Path 3)
 - `samples/data/seed_events.py` — six months of realistic activity for five
   users across three apps, loadable via `POST /v1/events/batch`
+- `samples/shops/` — full-stack SAP / Salesforce / Oracle seed-data generators
+  (see [samples/shops/README.md](samples/shops/README.md))
 
 ## Admin UI
 
 `admin/graph-viewer/` is a self-contained graph viewer served on port 3000 by
-`docker compose up`. It shows, per user: the activity graph with
-frequency-weighted edges, an activity timeline, detected-pattern cards, the
-natural-language profile, and a live event feed. See
-[docs/admin-ui-guide.md](docs/admin-ui-guide.md).
+`docker compose up`. Pick a tenant from the **Tenant / shop** dropdown (the
+three enterprise shops are built in, plus an "Other…" entry for any custom
+tenant), and scope how much history loads with the **History window** filter
+(30 / 90 / 180 days). Per user it shows: the activity graph with
+frequency-weighted edges (capped for very busy users so the render stays fast),
+an activity timeline, detected-pattern cards, the natural-language profile, and
+a live event feed. See [docs/admin-ui-guide.md](docs/admin-ui-guide.md).
 
 ## Tech stack
 
