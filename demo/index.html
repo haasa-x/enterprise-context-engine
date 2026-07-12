@@ -1,0 +1,120 @@
+<meta charset="utf-8" />
+<title>Enterprise Context Engine — Live Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="styles.css" />
+<!-- Graph library via CDN (no build step / no npm required) -->
+<script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
+<!-- Static demo: the viewer reads bundled JSON snapshots instead of a live API. -->
+<script>
+  window.CE_DEMO_BASE = "./data";
+</script>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>Enterprise Context Engine</h1>
+    <span>Live Demo · sample data</span>
+  </div>
+
+  <!-- Hidden: not used in the static demo, but referenced by the shared app.js. -->
+  <input id="apiBase" type="hidden" value="demo" />
+
+  <div class="field">
+    <label for="tenantId">Tenant / shop</label>
+    <select id="tenantId">
+      <option value="globex-industries">SAP shop (globex-industries)</option>
+      <option value="initech-global">Salesforce shop (initech-global)</option>
+      <option value="umbrella-holdings">Oracle shop (umbrella-holdings)</option>
+    </select>
+    <input id="customTenant" type="text" hidden />
+  </div>
+
+  <div class="field">
+    <label for="userSelect">User</label>
+    <select id="userSelect">
+      <option value="">— loading users —</option>
+    </select>
+  </div>
+
+  <button id="loadUsersBtn" class="secondary" type="button">Reload users</button>
+</header>
+
+<div id="globalStatus">
+  <div class="banner info" style="margin:12px 16px 0">
+    Read-only snapshot of a few representative users per shop, captured from a
+    running engine. Pick a shop and a user to explore. Full source & self-host:
+    <a href="https://github.com/haasa-x/enterprise-context-engine" target="_blank"
+       rel="noopener">github.com/haasa-x/enterprise-context-engine</a>.
+    Try <strong>10013890</strong> (SAP, Ariba→S/4HANA) or select the Salesforce
+    shop and an AE to see cross-application sequences.
+  </div>
+  <div id="banner" class="banner info hidden"></div>
+</div>
+
+<main>
+  <!-- NLQ profile -->
+  <section class="card" id="profileCard">
+    <header>
+      <h2>Behavioural profile</h2>
+      <span class="hint" id="profileHint"></span>
+    </header>
+    <div class="body">
+      <div id="profileText"><span class="placeholder">Select a user to view their generated profile.</span></div>
+      <div id="profileMeta" class="profile-meta" hidden></div>
+    </div>
+  </section>
+
+  <div class="two-col">
+    <!-- Graph -->
+    <section class="card" id="graphCard">
+      <header>
+        <h2>Activity graph</h2>
+        <span class="hint">Edge thickness = how often an action was performed</span>
+        <button id="fitGraphBtn" class="ghost" type="button" title="Fit graph to view">Fit</button>
+      </header>
+      <div class="graph-wrap">
+        <div id="graph"></div>
+        <div id="graphStatus" class="mini-status graph-stat"></div>
+      </div>
+      <div class="graph-legend" id="graphLegend"></div>
+    </section>
+
+    <!-- Pattern list -->
+    <section class="card" id="patternCard">
+      <header>
+        <h2>Detected patterns</h2>
+        <span class="hint" id="patternHint"></span>
+      </header>
+      <div class="body">
+        <div id="patternList">
+          <div class="placeholder">Patterns appear once a user with enough activity is selected.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Timeline -->
+  <section class="card" id="timelineCard">
+    <header>
+      <h2>Activity timeline</h2>
+      <span class="hint">Events bucketed by day — clusters show recurring routines</span>
+    </header>
+    <div class="body">
+      <div id="timeline"><div class="placeholder">Select a user to plot their activity over time.</div></div>
+      <div class="timeline-tip" id="timelineTip"></div>
+    </div>
+  </section>
+
+  <!-- Event feed -->
+  <section class="card" id="feedCard">
+    <header>
+      <h2>Event feed</h2>
+      <span class="hint" id="feedHint"></span>
+      <button id="refreshFeedBtn" class="secondary" type="button" style="margin-left:12px">Refresh</button>
+    </header>
+    <div class="event-list" id="eventFeed">
+      <div class="placeholder">Recent events for the selected user appear here, newest first.</div>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>

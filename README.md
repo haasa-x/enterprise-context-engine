@@ -8,6 +8,26 @@ It ships with realistic, full-stack seed data for three archetypal enterprise
 buyers — **SAP**, **Salesforce**, and **Oracle** shops — so you can watch the
 graph, profiler, and predictions light up on day one.
 
+## Live demo
+
+**▶ [Explore the interactive demo](https://haasa-x.github.io/enterprise-context-engine/)**
+— the real admin graph viewer running entirely in your browser against a
+read-only snapshot of a few representative users per shop. No install, no
+backend. Pick a shop and a user to see their behavioural profile, activity
+graph, detected patterns, and cross-application sequences.
+
+[![Enterprise Context Engine demo — SAP procurement user showing an Ariba → S/4HANA cross-application sequence](docs/media/demo-sap.png)](https://haasa-x.github.io/enterprise-context-engine/?tenant=globex-industries&user=10013890)
+
+<sub>Above: a SAP procurement user whose Ariba requisitions flow into S/4HANA
+purchase orders — surfaced as a 100%-confidence cross-app sequence.</sub>
+
+| Salesforce shop | Oracle shop |
+|---|---|
+| [![Salesforce demo](docs/media/demo-salesforce.png)](https://haasa-x.github.io/enterprise-context-engine/?tenant=initech-global&user=sso%7Cinitech%7Cd4e5f6) | [![Oracle demo](docs/media/demo-oracle.png)](https://haasa-x.github.io/enterprise-context-engine/?tenant=umbrella-holdings&user=300000051245) |
+
+The demo is a static snapshot; to drive the full engine with live ingestion,
+run it locally (below).
+
 Context Engine collects structured user-activity events from enterprise
 applications — Jira, SAP SuccessFactors, Concur, or anything else — via a
 push-based SDK, pull-based connectors, or log listeners, stores them in a
