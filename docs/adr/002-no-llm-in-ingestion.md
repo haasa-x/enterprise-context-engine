@@ -59,8 +59,7 @@ LLM backend never touches ingestion or intent-resolution latency. See
   cost is Neo4j and CPU.
 - **Privacy.** No event data is sent to a third-party model or API. The system
   runs fully self-contained (see the "zero external API dependencies"
-  constraint in the [execution plan](../../EXECUTION_PLAN.md) and
-  [architecture.md](../architecture.md)).
+  constraint in [architecture.md](../architecture.md)).
 - **Latency.** Meeting **ingestion p99 < 20ms** is achievable because the write
   path is a validate-and-store with no model in the loop; there is no inference
   tail to blow the budget.
