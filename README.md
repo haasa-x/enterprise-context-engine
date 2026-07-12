@@ -1,4 +1,4 @@
-# Enterprise Context Engine
+# Enterprise Context Engine for LLMs
 
 An open-source, vendor-neutral service that answers two questions: given this
 user and this trigger, what are they most likely trying to do right now
@@ -303,8 +303,6 @@ in what that user actually does. Here's what's in place and what's coming.
   model call. The deterministic template stays the zero-dependency default.
 - **Intent explanations** — a natural-language "why" behind each prediction, so
   an agent (and its user) can see the signals a suggestion rests on.
-- **Feedback loop** — let agents report which predictions were acted on, to
-  sharpen ranking over time.
 
 Contributions and ideas welcome — see below.
 
