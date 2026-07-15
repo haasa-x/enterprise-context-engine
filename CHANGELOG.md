@@ -11,3 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release: event ingestion API, temporal knowledge graph (Neo4j), rules-based
   intent resolution, MCP tool server, Python and Node SDKs, and a Jira connector.
+- Enterprise shop seed-data generators for SAP, Salesforce, and Oracle stacks
+  (`samples/shops/`), each modelling multiple products, modules, and personas with
+  cross-application workflows.
+- Interactive, client-side demo of the admin graph viewer, published to GitHub Pages.
+- Admin graph-viewer: Tenant/shop dropdown, History-window filter, and bounded
+  event reads (`days`/`limit`) for fast rendering on high-volume users.
